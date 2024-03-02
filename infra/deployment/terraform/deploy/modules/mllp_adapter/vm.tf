@@ -1,6 +1,7 @@
 resource "google_compute_address" "mllp_adapter" {
-  name       = "mllp-adapter-address"
-  subnetwork = var.northamerica_northeast1_subnetwork_name
+  name         = "mllp-adapter-address"
+  address_type = "INTERNAL"
+  subnetwork   = var.northamerica_northeast1_subnetwork_name
 }
 
 module "mllp_adapter_gce_container" {
