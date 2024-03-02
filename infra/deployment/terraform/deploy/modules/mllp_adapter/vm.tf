@@ -20,11 +20,10 @@ module "mllp_adapter_gce_container" {
 # --pubsub_project_id=${data.google_project.project.project_id} \
 
 resource "google_compute_instance" "mllp_adapter" {
-  name         = "mllp-adapter"
+  # Force re-creation when GCE Container Metadata Value changes.
+  name         = "mllp-adapter-${md5(module.mllp_adapter_gce_container.metadata_value)}"
   machine_type = "n2-standard-2"
   zone         = "northamerica-northeast1-a"
-  # Force re-creation when GCE Container Metadata Value changes. See https://github.com/terraform-google-modules/terraform-google-container-vm/issues/29#issuecomment-1162639775 
-  description = "GCE Container Metadata Value SHA512 hash (base64): ${base64sha512(module.mllp_adapter_gce_container.metadata_value)}"
 
   boot_disk {
     initialize_params {
