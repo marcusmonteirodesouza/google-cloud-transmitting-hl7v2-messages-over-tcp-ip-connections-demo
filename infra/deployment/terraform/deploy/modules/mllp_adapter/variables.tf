@@ -8,7 +8,17 @@ variable "hl7_v2_dataset_id" {
   description = "MLLP Adapter HL7v2 dataset ID."
 }
 
+variable "hl7_v2_dataset_name" {
+  type        = string
+  description = "MLLP Adapter HL7v2 dataset name."
+}
+
 variable "hl7_v2_store_id" {
   type        = string
   description = "MLLP Adapter HL7v2 store ID."
+}
+
+variable "hl7_v2_store_name" {
+  type        = string
+  description = "MLLP Adapter HL7v2 store name."
 }
