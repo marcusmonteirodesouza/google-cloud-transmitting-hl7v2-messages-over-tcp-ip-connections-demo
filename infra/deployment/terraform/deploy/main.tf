@@ -10,6 +10,10 @@ provider "google-beta" {
   user_project_override = true
 }
 
+module "iam" {
+  source = "./modules/iam"
+}
+
 module "network" {
   source = "./modules/network"
 }
