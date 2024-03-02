@@ -10,6 +10,16 @@ provider "google-beta" {
   user_project_override = true
 }
 
+module "network" {
+  source = "./modules/network"
+}
+
 module "healthcare" {
   source = "./modules/healthcare"
+}
+
+module "mllp_adapter" {
+  source = "./modules/mllp_adapter"
+
+  northamerica_northeast1_subnetwork_name = module.network.vpc_northamerica_northeast1_subnetwork
 }
