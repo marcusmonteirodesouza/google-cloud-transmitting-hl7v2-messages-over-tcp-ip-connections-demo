@@ -27,7 +27,6 @@ module "mllp_adapter_gce_container" {
 # TODO(Marcus): Add to mllp_adapter_gce_container command
 # --pubsub_project_id=${data.google_project.project.project_id} \
 
-
 resource "google_compute_instance" "mllp_adapter" {
   name         = "mllp-adapter"
   machine_type = "n2-standard-2"
@@ -58,6 +57,46 @@ resource "google_compute_instance" "mllp_adapter" {
 
   labels = {
     container-vm = module.mllp_adapter_gce_container.vm_container_label
+  }
+
+  allow_stopping_for_update = true
+
+  service_account {
+    email = google_service_account.mllp_adapter.email
+    scopes = [
+      "cloud-platform",
+    ]
+  }
+
+  depends_on = [
+    google_project_iam_member.mllp_adapter_sa
+  ]
+}
+
+resource "google_compute_instance" "mllp_adapter_test" {
+  name         = "mllp-adapter-test"
+  machine_type = "e2-standard-2"
+  zone         = "northamerica-northeast1-a"
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-12"
+    }
+  }
+
+  network_interface {
+    subnetwork = var.northamerica_northeast1_subnetwork_name
+  }
+
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
+
+  metadata = {
+    google-logging-enabled    = "true"
+    google-monitoring-enabled = "true"
+    block-project-ssh-keys    = true
+    enable-oslogin            = true
   }
 
   allow_stopping_for_update = true
