@@ -10,12 +10,10 @@ provider "google-beta" {
   user_project_override = true
 }
 
-module "iam" {
-  source = "./modules/iam"
-}
-
 module "network" {
   source = "./modules/network"
+
+  my_vpn_gateway_ip_address = var.my_vpn_gateway_ip_address
 }
 
 module "healthcare" {
