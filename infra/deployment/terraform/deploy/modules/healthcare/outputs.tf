@@ -1,0 +1,3 @@
+output "transmitting_hl7v2_messages_over_tcp_ip_connections_dataset_id" {
+  value = google_healthcare_dataset.transmitting_hl7v2_messages_over_tcp_ip_connections.id
+}
