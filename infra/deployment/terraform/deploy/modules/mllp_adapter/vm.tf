@@ -16,7 +16,7 @@ module "mllp_adapter_gce_container" {
   --hl7_v2_store_id=${var.hl7_v2_store_id} \
   --api_addr_prefix=https://healthcare.googleapis.com:443/v1 \
   --logtostderr \ 
-  --receiver_ip=${google_compute_address.mlpp_adapter.address} \
+  --receiver_ip=${google_compute_address.mllp_adapter.address}
   EOF
     image   = "cloud-healthcare-containers/mllp-adapter:latest"
   }
