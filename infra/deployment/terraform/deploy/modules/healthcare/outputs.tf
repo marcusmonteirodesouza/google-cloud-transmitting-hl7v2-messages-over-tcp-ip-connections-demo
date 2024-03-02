@@ -1,19 +1,3 @@
 output "transmitting_hl7v2_messages_over_tcp_ip_connections_dataset_id" {
   value = google_healthcare_dataset.transmitting_hl7v2_messages_over_tcp_ip_connections.id
 }
-
-output "transmitting_hl7v2_messages_over_tcp_ip_connections_dataset_name" {
-  value = google_healthcare_dataset.transmitting_hl7v2_messages_over_tcp_ip_connections.name
-}
-
-output "transmitting_hl7v2_messages_over_tcp_ip_connections_store_id" {
-  value = google_healthcare_hl7_v2_store.transmitting_hl7v2_messages_over_tcp_ip_connections.id
-}
-
-output "transmitting_hl7v2_messages_over_tcp_ip_connections_store_name" {
-  value = google_healthcare_hl7_v2_store.transmitting_hl7v2_messages_over_tcp_ip_connections.name
-}
-
-output "transmitting_hl7v2_messages_over_tcp_ip_connections_store_notifications_pubsub_topic" {
-  value = google_pubsub_topic.transmitting_hl7v2_messages_over_tcp_ip_connections_store_notifications.name
-}
