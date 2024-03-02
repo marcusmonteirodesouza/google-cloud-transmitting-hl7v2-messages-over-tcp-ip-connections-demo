@@ -1,11 +1,7 @@
 locals {
   enable_apis = [
-    "artifactregistry.googleapis.com",
-    "compute.googleapis.com",
     "container.googleapis.com",
     "healthcare.googleapis.com",
-    "pubsub.googleapis.com",
-    "run.googleapis.com"
   ]
 }
 
