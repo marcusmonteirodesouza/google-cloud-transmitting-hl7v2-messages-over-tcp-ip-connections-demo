@@ -11,6 +11,7 @@ resource "google_cloudbuild_trigger" "deploy" {
   filename = "infra/deployment/cloudbuild/deploy/cloudbuild.yaml"
 
   substitutions = {
-    _TFSTATE_BUCKET = var.tfstate_bucket
+    _TFSTATE_BUCKET            = var.tfstate_bucket
+    _MY_VPN_GATEWAY_IP_ADDRESS = var.my_vpn_gateway_ip_address
   }
 }

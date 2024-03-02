@@ -25,8 +25,9 @@ module "iam" {
 module "cloudbuild" {
   source = "./modules/cloudbuild"
 
-  branch_name     = var.branch_name
-  sourcerepo_name = var.sourcerepo_name
-  tfstate_bucket  = google_storage_bucket.tfstate.name
+  branch_name               = var.branch_name
+  sourcerepo_name           = var.sourcerepo_name
+  tfstate_bucket            = google_storage_bucket.tfstate.name
+  my_vpn_gateway_ip_address = var.my_vpn_gateway_ip_address
 }
 

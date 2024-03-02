@@ -1,19 +1,37 @@
-resource "google_compute_address" "vpc_vpn_northamerica_northeast1" {
-  name   = "vpc-vpn-na-ne1-ip"
-  region = "northamerica-northeast1"
+locals {
+  vpc_northamerica_northeast1_my_vpn_gateway_prefix = "${google_compute_ha_vpn_gateway.vpc_northamerica_northeast1.name}-${google_compute_external_vpn_gateway.my_vpn_gateway.name}"
 }
 
-resource "google_compute_address" "my_vpn_northamerica_northeast1" {
-  name   = "my-vpn-na-ne1-ip"
-  region = "northamerica-northeast1"
+resource "google_compute_ha_vpn_gateway" "vpc_northamerica_northeast1" {
+  region  = "northamerica-northeast1"
+  name    = "ha-vpn-na-ne1"
+  network = google_compute_network.vpc.id
 }
 
-resource "random_password" "vpc_vpn_northamerica_northeast1_my_vpn_shared_secret" {
+resource "google_compute_external_vpn_gateway" "my_vpn_gateway" {
+  name            = "my-vpn-gateway"
+  redundancy_type = "SINGLE_IP_INTERNALLY_REDUNDANT"
+  description     = "My VPN gateway"
+  interface {
+    id         = 0
+    ip_address = var.my_vpn_gateway_ip_address
+  }
+}
+
+resource "google_compute_router" "vpc_ha_vpn_northamerica_northeast1_router1" {
+  name    = "ha-vpn-na-ne1-router1"
+  network = google_compute_network.vpc.name
+  bgp {
+    asn = 64514
+  }
+}
+
+resource "random_password" "vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret" {
   length = 32
 }
 
-resource "google_secret_manager_secret" "vpc_vpn_northamerica_northeast1_my_vpn_shared_secret" {
-  secret_id = "vpc-vpn-na-ne1-my-vpn-shared-secret"
+resource "google_secret_manager_secret" "vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret" {
+  secret_id = "${local.vpc_northamerica_northeast1_my_vpn_gateway_prefix}-shared-secret"
 
   replication {
     user_managed {
@@ -24,67 +42,65 @@ resource "google_secret_manager_secret" "vpc_vpn_northamerica_northeast1_my_vpn_
   }
 }
 
-resource "google_secret_manager_secret_version" "vpc_vpn_northamerica_northeast1_vpn_tunnel_1_shared_secret" {
-  secret      = google_secret_manager_secret.vpc_vpn_northamerica_northeast1_my_vpn_shared_secret.id
-  secret_data = random_password.vpc_vpn_northamerica_northeast1_my_vpn_shared_secret.result
+resource "google_secret_manager_secret_version" "vpc_ha_vpn_northamerica_northeast1_vpn_tunnerl_shared_secret" {
+  secret      = google_secret_manager_secret.vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret.id
+  secret_data = random_password.vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret.result
 }
 
-resource "google_compute_vpn_gateway" "vpc_northamerica_northeast1" {
-  name    = "vpc-vpn-na-ne1"
-  region  = "northamerica-northeast1"
-  network = google_compute_network.vpc.id
+resource "google_compute_vpn_tunnel" "vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_1" {
+  name                            = "${local.vpc_northamerica_northeast1_my_vpn_gateway_prefix}-tunnel1"
+  region                          = "northamerica-northeast1"
+  vpn_gateway                     = google_compute_ha_vpn_gateway.vpc_northamerica_northeast1.id
+  peer_external_gateway           = google_compute_external_vpn_gateway.my_vpn_gateway.id
+  peer_external_gateway_interface = 0
+  shared_secret                   = random_password.vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret.result
+  router                          = google_compute_router.vpc_ha_vpn_northamerica_northeast1_router1.id
+  vpn_gateway_interface           = 0
 }
 
-resource "google_compute_forwarding_rule" "vpc_vpn_northamerica_northeast1_rule_esp" {
-  name        = "vpn-na-ne1-rule-esp"
-  region      = "northamerica-northeast1"
-  ip_address  = google_compute_address.vpc_vpn_northamerica_northeast1.address
-  ip_protocol = "ESP"
-  target      = google_compute_vpn_gateway.vpc_northamerica_northeast1.id
+resource "google_compute_vpn_tunnel" "vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_2" {
+  name                            = "${local.vpc_northamerica_northeast1_my_vpn_gateway_prefix}-tunnel2"
+  region                          = "northamerica-northeast1"
+  vpn_gateway                     = google_compute_ha_vpn_gateway.vpc_northamerica_northeast1.id
+  peer_external_gateway           = google_compute_external_vpn_gateway.my_vpn_gateway.id
+  peer_external_gateway_interface = 0
+  shared_secret                   = random_password.vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret.result
+  router                          = google_compute_router.vpc_ha_vpn_northamerica_northeast1_router1.id
+  vpn_gateway_interface           = 1
 }
 
-resource "google_compute_forwarding_rule" "vpc_vpn_northamerica_northeast1_rule_udp500" {
-  name        = "vpn-na-ne1-rule-udp500"
-  region      = "northamerica-northeast1"
-  ip_address  = google_compute_address.vpc_vpn_northamerica_northeast1.address
-  ip_protocol = "UDP"
-  port_range  = "500"
-  target      = google_compute_vpn_gateway.vpc_northamerica_northeast1.id
+resource "google_compute_router_interface" "vpc_ha_vpn_northamerica_northeast1_router1_interface1" {
+  name       = "${local.vpc_northamerica_northeast1_my_vpn_gateway_prefix}-router1-interface1"
+  router     = google_compute_router.vpc_ha_vpn_northamerica_northeast1_router1.name
+  region     = "northamerica-northeast1"
+  ip_range   = "169.254.0.1/30"
+  vpn_tunnel = google_compute_vpn_tunnel.vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_1.name
 }
 
-resource "google_compute_forwarding_rule" "vpc_vpn_northamerica_northeast1_rule_udp4500" {
-  name        = "vpn-na-ne1-rule-udp4500"
-  region      = "northamerica-northeast1"
-  ip_address  = google_compute_address.vpc_vpn_northamerica_northeast1.address
-  ip_protocol = "UDP"
-  port_range  = "4500"
-  target      = google_compute_vpn_gateway.vpc_northamerica_northeast1.id
+resource "google_compute_router_peer" "vpc_ha_vpn_northamerica_northeast1_router1_peer1" {
+  name                      = "${local.vpc_northamerica_northeast1_my_vpn_gateway_prefix}-router1-peer1"
+  router                    = google_compute_router.vpc_ha_vpn_northamerica_northeast1_router1.name
+  region                    = "northamerica-northeast1"
+  peer_ip_address           = "169.254.0.2"
+  peer_asn                  = 64515
+  advertised_route_priority = 100
+  interface                 = google_compute_router_interface.vpc_ha_vpn_northamerica_northeast1_router1_interface1.name
 }
 
-resource "google_compute_vpn_tunnel" "vpc_vpn_northamerica_northeast1_vpn_tunnel_1" {
-  name          = "vpc-vpn-na-ne1-tunnel-1"
-  region        = "northamerica-northeast1"
-  peer_ip       = google_compute_address.my_vpn_northamerica_northeast1.address
-  shared_secret = random_password.vpc_vpn_northamerica_northeast1_my_vpn_shared_secret.result
-  ike_version   = 2
-  local_traffic_selector = [
-    "0.0.0.0/0"
-  ]
-  remote_traffic_selector = [
-    "0.0.0.0/0"
-  ]
-  target_vpn_gateway = google_compute_vpn_gateway.vpc_northamerica_northeast1.id
-
-  depends_on = [
-    google_compute_forwarding_rule.vpc_vpn_northamerica_northeast1_rule_esp,
-    google_compute_forwarding_rule.vpc_vpn_northamerica_northeast1_rule_udp500,
-    google_compute_forwarding_rule.vpc_vpn_northamerica_northeast1_rule_udp4500,
-  ]
+resource "google_compute_router_interface" "vpc_ha_vpn_northamerica_northeast1_router1_interface2" {
+  name       = "${local.vpc_northamerica_northeast1_my_vpn_gateway_prefix}-router1-interface2"
+  router     = google_compute_router.vpc_ha_vpn_northamerica_northeast1_router1.name
+  region     = "northamerica-northeast1"
+  ip_range   = "169.254.1.1/30"
+  vpn_tunnel = google_compute_vpn_tunnel.vpc_ha_vpn_northamerica_northeast1_my_vpn_gateway_2.name
 }
 
-resource "google_compute_route" "vpc_vpn_northamerica_northeast1_vpn_tunnel_1_route_1" {
-  name                = "vpc-vpn-na-ne1-tunnel-1-route-1"
-  network             = google_compute_network.vpc.name
-  next_hop_vpn_tunnel = google_compute_vpn_tunnel.vpc_vpn_northamerica_northeast1_vpn_tunnel_1.id
-  dest_range          = "0.0.0.0/0"
+resource "google_compute_router_peer" "vpc_ha_vpn_northamerica_northeast1_router1_peer2" {
+  name                      = "${local.vpc_northamerica_northeast1_my_vpn_gateway_prefix}-router1-peer2"
+  router                    = google_compute_router.vpc_ha_vpn_northamerica_northeast1_router1.name
+  region                    = "northamerica-northeast1"
+  peer_ip_address           = "169.254.1.2"
+  peer_asn                  = 64515
+  advertised_route_priority = 100
+  interface                 = google_compute_router_interface.vpc_ha_vpn_northamerica_northeast1_router1_interface2.name
 }
