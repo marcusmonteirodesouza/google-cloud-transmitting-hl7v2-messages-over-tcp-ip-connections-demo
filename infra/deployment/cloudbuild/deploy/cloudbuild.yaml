@@ -1,0 +1,11 @@
+steps:
+  - name: "hashicorp/terraform"
+    id: enable-apis
+    dir: infra/deployment/terraform/enable_apis
+    script: |
+      terraform init -backend-config=bucket=$TFSTATE_BUCKET
+
+      terraform apply --auto-approve
+    env:
+      - "TFSTATE_BUCKET=${_TFSTATE_BUCKET}"
+      - "TF_VAR_project_id=${PROJECT_ID}"
