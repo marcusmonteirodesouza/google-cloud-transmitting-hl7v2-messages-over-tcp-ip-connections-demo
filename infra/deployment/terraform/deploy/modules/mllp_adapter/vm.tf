@@ -1,13 +1,32 @@
+resource "google_compute_address" "mllp_adapter" {
+  name = "mllp-adapter-address"
+}
+
 module "mllp_adapter_gce_container" {
   source  = "terraform-google-modules/container-vm/google"
   version = "~> 3.1"
 
   container = {
-    image = "cloud-healthcare-containers/mllp-adapter:latest"
+    command = <<-EOF
+  /usr/mllp_adapter/mllp_adapter \
+  --port=2575 \
+  --hl7_v2_project_id=${data.google_project.project.project_id} \
+  --hl7_v2_location_id=northamerica-northeast1 \
+  --hl7_v2_dataset_id=${var.hl7_v2_dataset_id} \
+  --hl7_v2_store_id=${var.hl7_v2_store_id} \
+  --api_addr_prefix=https://healthcare.googleapis.com:443/v1 \
+  --logtostderr \ 
+  --receiver_ip=${google_compute_address.mlpp_adapter.address} \
+  EOF
+    image   = "cloud-healthcare-containers/mllp-adapter:latest"
   }
 
   restart_policy = "Always"
 }
+
+# TODO(Marcus): Add to mllp_adapter_gce_container command
+# --pubsub_project_id=${data.google_project.project.project_id} \
+
 
 resource "google_compute_instance" "mllp_adapter" {
   name         = "mllp-adapter"
@@ -22,6 +41,7 @@ resource "google_compute_instance" "mllp_adapter" {
 
   network_interface {
     subnetwork = var.northamerica_northeast1_subnetwork_name
+    network_ip = google_compute_address.mllp_adapter.address
   }
 
   shielded_instance_config {
