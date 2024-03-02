@@ -9,17 +9,7 @@ module "mllp_adapter_gce_container" {
   version = "~> 3.1"
 
   container = {
-    command = <<-EOF
-  /usr/mllp_adapter/mllp_adapter \
-  --port=2575 \
-  --hl7_v2_project_id=${data.google_project.project.project_id} \
-  --hl7_v2_location_id=northamerica-northeast1 \
-  --hl7_v2_dataset_id=${var.hl7_v2_dataset_id} \
-  --hl7_v2_store_id=${var.hl7_v2_store_id} \
-  --api_addr_prefix=https://healthcare.googleapis.com:443/v1 \
-  --logtostderr \ 
-  --receiver_ip=${google_compute_address.mllp_adapter.address}
-  EOF
+    command = "/usr/mllp_adapter/mllp_adapter --port=2575 --hl7_v2_project_id=${data.google_project.project.project_id} --hl7_v2_location_id=northamerica-northeast1 --hl7_v2_dataset_id=${var.hl7_v2_dataset_id} --hl7_v2_store_id=${var.hl7_v2_store_id} --api_addr_prefix=https://healthcare.googleapis.com:443/v1 --logtostderr --receiver_ip=${google_compute_address.mllp_adapter.address}"
     image   = "cloud-healthcare-containers/mllp-adapter:latest"
   }
 
