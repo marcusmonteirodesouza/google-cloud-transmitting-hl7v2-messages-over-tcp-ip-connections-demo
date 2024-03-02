@@ -11,5 +11,9 @@ resource "google_healthcare_hl7_v2_store" "transmitting_hl7v2_messages_over_tcp_
   notification_configs {
     pubsub_topic = google_pubsub_topic.transmitting_hl7v2_messages_over_tcp_ip_connections_store_notifications.id
   }
+
+  depends_on = [
+    google_pubsub_topic_iam_member.transmitting_hl7v2_messages_over_tcp_ip_connections_store_notifications_healthcare_sa
+  ]
 }
 
