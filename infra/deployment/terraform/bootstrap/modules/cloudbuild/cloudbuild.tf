@@ -1,7 +1,7 @@
 resource "google_cloudbuild_trigger" "deploy" {
   name        = "deploy"
   description = "Build and deploy the system - ${var.sourcerepo_name}/${var.branch_name} push"
-  location    = "northamerica-northeast1"
+  location    = "global"
 
   trigger_template {
     repo_name   = var.sourcerepo_name
