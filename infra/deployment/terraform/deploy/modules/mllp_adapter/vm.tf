@@ -64,6 +64,12 @@ resource "google_compute_instance" "mllp_adapter" {
     ]
   }
 
+  lifecycle {
+    replace_triggered_by = [
+      module.mllp_adapter_gce_container.metadata_value
+    ]
+  }
+
   depends_on = [
     google_project_iam_member.mllp_adapter_sa,
     google_healthcare_dataset_iam_member.hl7_v2_dataset
