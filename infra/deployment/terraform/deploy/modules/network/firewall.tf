@@ -36,7 +36,7 @@ resource "google_compute_firewall" "vpc_allow_ingress_from_northamerica_northeas
   ]
 }
 
-resource "google_compute_firewall" "vpc_allow_ingress_from_northamerica_northeast1_subnetwork" {
+resource "google_compute_firewall" "vpc_allow_ingress_outline_vpn_server" {
   name      = "allow-ingress-outline-vpn-server"
   network   = google_compute_network.vpc.name
   direction = "INGRESS"
