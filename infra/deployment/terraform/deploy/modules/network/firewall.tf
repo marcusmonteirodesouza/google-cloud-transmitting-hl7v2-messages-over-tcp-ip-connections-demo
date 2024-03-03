@@ -44,15 +44,15 @@ resource "google_compute_firewall" "vpc_allow_ingress_outline_vpn_server" {
   allow {
     protocol = "TCP"
     ports = [
-      "12530",
-      "24170"
+      "11420",
+      "44675",
     ]
   }
 
   allow {
     protocol = "UDP"
     ports = [
-      "12530"
+      "44675"
     ]
   }
 
