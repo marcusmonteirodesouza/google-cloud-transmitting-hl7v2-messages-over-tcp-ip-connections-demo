@@ -36,23 +36,16 @@ resource "google_compute_firewall" "vpc_allow_ingress_from_northamerica_northeas
   ]
 }
 
-resource "google_compute_firewall" "vpc_allow_ingress_outline_vpn_server" {
+resource "google_compute_firewall" "vpc_allow_ingress_my_vpn" {
   name      = "allow-ingress-outline-vpn-server"
   network   = google_compute_network.vpc.name
   direction = "INGRESS"
 
   allow {
-    protocol = "TCP"
-    ports = [
-      "11420",
-      "44675",
-    ]
-  }
-
-  allow {
     protocol = "UDP"
     ports = [
-      "44675"
+      "500",
+      "4500"
     ]
   }
 
@@ -61,6 +54,6 @@ resource "google_compute_firewall" "vpc_allow_ingress_outline_vpn_server" {
   ]
 
   target_tags = [
-    "allow-ingress-outline-vpn-server"
+    "allow-ingress-my-vpn"
   ]
 }
