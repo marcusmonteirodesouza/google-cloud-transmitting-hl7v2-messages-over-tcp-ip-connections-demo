@@ -1,3 +1,22 @@
+locals {
+  mllp_adapter_sa_roles = [
+    "roles/logging.logWriter",
+    "roles/monitoring.metricWriter"
+  ]
+}
+
+resource "google_service_account" "mllp_adapter" {
+  account_id   = "mllp-adapter"
+  display_name = "MLLP Adapter service account"
+}
+
+resource "google_project_iam_member" "mllp_adapter_sa" {
+  for_each = toset(local.mllp_adapter_sa_roles)
+  project  = data.google_project.project.project_id
+  role     = each.value
+  member   = "serviceAccount:${google_service_account.mllp_adapter.email}"
+}
+
 resource "google_compute_address" "mllp_adapter" {
   name         = "mllp-adapter-address"
   address_type = "INTERNAL"
@@ -9,9 +28,12 @@ module "mllp_adapter_gce_container" {
   version = "~> 3.1"
 
   container = {
+    image = "gcr.io/cloud-healthcare-containers/mllp-adapter:latest"
+
     command = [
       "/usr/mllp_adapter/mllp_adapter"
     ]
+
     args = [
       "--port=2575",
       "--hl7_v2_project_id=${data.google_project.project.project_id}",
@@ -21,7 +43,6 @@ module "mllp_adapter_gce_container" {
       "--logtostderr",
       "--receiver_ip=0.0.0.0"
     ]
-    image = "gcr.io/cloud-healthcare-containers/mllp-adapter:latest"
   }
 
   restart_policy = "Always"

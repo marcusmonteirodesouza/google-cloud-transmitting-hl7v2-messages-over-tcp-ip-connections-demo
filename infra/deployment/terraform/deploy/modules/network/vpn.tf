@@ -3,6 +3,32 @@ resource "google_compute_address" "vpc_vpn_northamerica_northeast1" {
   region = "northamerica-northeast1"
 }
 
+resource "google_compute_address" "my_vpn_northamerica_northeast1" {
+  name   = "my-vpn-na-ne1-ip"
+  region = "northamerica-northeast1"
+}
+
+resource "random_password" "vpc_vpn_northamerica_northeast1_my_vpn_shared_secret" {
+  length = 32
+}
+
+resource "google_secret_manager_secret" "vpc_vpn_northamerica_northeast1_my_vpn_shared_secret" {
+  secret_id = "vpc-vpn-na-ne1-my-vpn-shared-secret"
+
+  replication {
+    user_managed {
+      replicas {
+        location = "northamerica-northeast1"
+      }
+    }
+  }
+}
+
+resource "google_secret_manager_secret_version" "vpc_vpn_northamerica_northeast1_vpn_tunnel_1_shared_secret" {
+  secret      = google_secret_manager_secret.vpc_vpn_northamerica_northeast1_my_vpn_shared_secret.id
+  secret_data = random_password.vpc_vpn_northamerica_northeast1_my_vpn_shared_secret.result
+}
+
 resource "google_compute_vpn_gateway" "vpc_northamerica_northeast1" {
   name    = "vpc-vpn-na-ne1"
   region  = "northamerica-northeast1"
@@ -35,32 +61,11 @@ resource "google_compute_forwarding_rule" "vpc_vpn_northamerica_northeast1_rule_
   target      = google_compute_vpn_gateway.vpc_northamerica_northeast1.id
 }
 
-resource "random_password" "vpc_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret" {
-  length = 32
-}
-
-resource "google_secret_manager_secret" "vpc_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret" {
-  secret_id = "vpc-vpn-na-ne1-my-vpn-gateway-shared-secret"
-
-  replication {
-    user_managed {
-      replicas {
-        location = "northamerica-northeast1"
-      }
-    }
-  }
-}
-
-resource "google_secret_manager_secret_version" "vpc_vpn_northamerica_northeast1_vpn_tunnel_1_shared_secret" {
-  secret      = google_secret_manager_secret.vpc_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret.id
-  secret_data = random_password.vpc_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret.result
-}
-
 resource "google_compute_vpn_tunnel" "vpc_vpn_northamerica_northeast1_vpn_tunnel_1" {
   name          = "vpc-vpn-na-ne1-tunnel-1"
   region        = "northamerica-northeast1"
-  peer_ip       = var.my_vpn_gateway_ip_address
-  shared_secret = random_password.vpc_vpn_northamerica_northeast1_my_vpn_gateway_shared_secret.result
+  peer_ip       = google_compute_address.my_vpn_northamerica_northeast1.address
+  shared_secret = random_password.vpc_vpn_northamerica_northeast1_my_vpn_shared_secret.result
   ike_version   = 2
   local_traffic_selector = [
     "0.0.0.0/0"
