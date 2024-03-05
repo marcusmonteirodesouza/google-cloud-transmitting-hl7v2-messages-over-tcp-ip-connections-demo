@@ -5,6 +5,7 @@ locals {
     "container.googleapis.com",
     "healthcare.googleapis.com",
     "pubsub.googleapis.com",
+    "run.googleapis.com"
   ]
 }
 
