@@ -11,3 +11,7 @@ See [docs](./docs/deployment).
 ### Generate HL7v2 messages to populate the HL7v2 store
 
 See [simhospital](./simhospital/).
+
+### API
+
+See [api](./api/)
