@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "api"
+version = "0.1.0"
+description = ""
+authors = ["Marcus Vinicius Monteiro de Souza <marcusmonteirodesouza@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+google-api-python-client = "^2.120.0"
+fastapi = {extras = ["all"], version = "^0.110.0"}
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
