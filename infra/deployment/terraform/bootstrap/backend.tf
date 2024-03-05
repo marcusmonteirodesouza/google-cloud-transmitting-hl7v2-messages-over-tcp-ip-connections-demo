@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
-    bucket = "vaguely-locally-robust-rat"
+    # bucket = ""
     prefix = "bootstrap"
   }
 }
