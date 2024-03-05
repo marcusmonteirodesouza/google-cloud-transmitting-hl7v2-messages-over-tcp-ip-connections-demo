@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  simhospital:
+    image: "eu.gcr.io/simhospital-images/simhospital:latest"
+    ports:
+      - ${PORT}:${PORT}
+    entrypoint:
+      [
+        "health/simulator",
+        "-output",
+        "mllp",
+        "-mllp_destination",
+        "${MLLP_ADAPTER_VM_HOST}:${MLLP_ADAPTER_VM_PORT}",
+        "-pathways_per_hour",
+        "${PATHWAYS_PER_HOUR}"
+      ]

@@ -11,7 +11,7 @@ Receives variables, enables the initial APIs, grants IAM permissions to the Clou
 1. Run `terraform apply -target=module.enable_apis --auto-approve`.
 1. Create a [Cloud Source Repository](https://cloud.google.com/source-repositories/docs/creating-an-empty-repository#create_a_new_repository). Update the value of the `sourcerepo_name` variable in the `terraform.tfvars` file.
 1. Run `terraform apply --auto-approve`.
-1. Uncomment the contents of the `backend.tf` file and add set the `bucket` attribute as the value of the `tfstate_bucket` output. 
+1. Uncomment the contents of the `backend.tf` file and add set the `bucket` attribute as the value of the `tfstate_bucket` output.
 1. Run `terraform init` and type `yes`.
 
 ## Deploy
