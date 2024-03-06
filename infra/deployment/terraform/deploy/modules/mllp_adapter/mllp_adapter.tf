@@ -19,8 +19,9 @@ resource "google_project_iam_member" "mllp_adapter_sa" {
 
 resource "google_compute_address" "mllp_adapter" {
   name         = "mllp-adapter-address"
+  region       = "northamerica-northeast1"
   address_type = "INTERNAL"
-  subnetwork   = var.northamerica_northeast1_subnetwork_name
+  subnetwork   = var.subnetwork_northamerica_northeast1_name
 }
 
 module "mllp_adapter_gce_container" {
@@ -61,12 +62,12 @@ resource "google_compute_instance" "mllp_adapter" {
   }
 
   network_interface {
-    subnetwork = var.northamerica_northeast1_subnetwork_name
+    subnetwork = var.subnetwork_northamerica_northeast1_name
     network_ip = google_compute_address.mllp_adapter.address
   }
 
   tags = [
-    "allow-ingress-from-northamerica-northeast1-subnetwork"
+    "allow-ingress-mllp"
   ]
 
   shielded_instance_config {
