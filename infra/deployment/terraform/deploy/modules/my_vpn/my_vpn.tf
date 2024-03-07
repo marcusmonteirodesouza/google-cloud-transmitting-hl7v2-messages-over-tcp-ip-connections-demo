@@ -6,7 +6,7 @@ locals {
 }
 
 resource "google_service_account" "my_vpn" {
-  account_id   = "my-vpn"
+  account_id   = "my-vpn-sa"
   display_name = "My VPN Gateway service account"
 }
 
@@ -15,6 +15,32 @@ resource "google_project_iam_member" "my_vpn_sa" {
   project  = data.google_project.project.project_id
   role     = each.value
   member   = "serviceAccount:${google_service_account.my_vpn.email}"
+}
+
+resource "google_compute_address" "my_vpn" {
+  name   = "my-vpn-address"
+  region = "northamerica-northeast1"
+}
+
+resource "random_password" "my_vpn_preshared_key" {
+  length = 32
+}
+
+resource "google_secret_manager_secret" "my_vpn_preshared_key" {
+  secret_id = "my-vpn-preshared-key"
+
+  replication {
+    user_managed {
+      replicas {
+        location = "northamerica-northeast1"
+      }
+    }
+  }
+}
+
+resource "google_secret_manager_secret_version" "my_vpn_preshared_key" {
+  secret      = google_secret_manager_secret.my_vpn_preshared_key.id
+  secret_data = random_password.my_vpn_preshared_key.result
 }
 
 resource "random_password" "my_vpn_user_password" {
@@ -48,7 +74,7 @@ module "my_vpn_gce_container" {
     env = [
       {
         name  = "VPN_IPSEC_PSK",
-        value = var.vpc_vpn_northamerica_northeast1_my_vpn_shared_secret_secret_data
+        value = google_secret_manager_secret_version.my_vpn_preshared_key.secret_data
       },
       {
         name  = "VPN_USER"
@@ -57,6 +83,10 @@ module "my_vpn_gce_container" {
       {
         name  = "VPN_PASSWORD"
         value = random_password.my_vpn_user_password.result
+      },
+      {
+        name  = "VPN_PUBLIC_IP"
+        value = google_compute_address.my_vpn.address
       }
     ]
 
@@ -109,14 +139,16 @@ resource "google_compute_instance" "my_vpn" {
   }
 
   network_interface {
-    subnetwork = var.northamerica_northeast1_subnetwork_name
+    subnetwork = var.subnetwork_northamerica_northeast1_name
     access_config {
-      nat_ip = var.my_vpn_northamerica_northeast1_ip_address
+      nat_ip = google_compute_address.my_vpn.address
     }
   }
 
+  can_ip_forward = true
+
   tags = [
-    "allow-ingress-my-vpn"
+    "allow-ingress-vpn-server"
   ]
 
   shielded_instance_config {
@@ -146,6 +178,5 @@ resource "google_compute_instance" "my_vpn" {
 
   depends_on = [
     google_project_iam_member.my_vpn_sa,
-    google_healthcare_dataset_iam_member.hl7_v2_dataset
   ]
 }
